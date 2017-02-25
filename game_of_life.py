@@ -22,7 +22,7 @@ class Block:
         canvas.delete(self.id)
         del blocks[(self.x, self.y)]
 
-    def define_existing_life(self, blocks, deleted_blocks, nearby_blocks):
+    def define_existing_life(self, blocks, deleted_blocks, near_blocks):
         counter = 0
         for add1 in additions:
             for add2 in additions:
@@ -30,7 +30,7 @@ class Block:
                     if (self.x + add1, self.y + add2) in blocks:
                         counter += 1
                     else:
-                        nearby_blocks.add((self.x + add1, self.y + add2))
+                        near_blocks.add((self.x + add1, self.y + add2))
         if not 2 <= counter <= 3:
             deleted_blocks.add((self.x, self.y))
 
@@ -70,10 +70,10 @@ def button_press_handler(event):
         escape = True
 
 
-def check_and_rebuild(blocks, nearby_blocks, deleted_blocks, born_blocks):
+def check_and_rebuild(blocks, near_blocks, deleted_blocks, born_blocks):
     for block in blocks.values():
-        block.define_existing_life(blocks, deleted_blocks, nearby_blocks)
-    for block in nearby_blocks:
+        block.define_existing_life(blocks, deleted_blocks, near_blocks)
+    for block in near_blocks:
         define_new_life(block, blocks, born_blocks)
     for block in deleted_blocks:
         blocks[block].remove(blocks)
