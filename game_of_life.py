@@ -34,21 +34,23 @@ class Block:
         if not 2 <= counter <= 3:
             deleted_blocks.add((self.x, self.y))
 
-using_blocks, creation_queue, time_flow, escape = {}, None, False, False
+using_blocks, creation_queue, cords, time_flow, escape = {}, None, (0, 0), False, False
 
 
 def game():
     global creation_queue, time_flow, escape, using_blocks
-    screen, iterator = canvas.create_text(100, 50, font='Times'), 0
+    screen1, screen2 = canvas.create_text(100, 50, font='Times'), canvas.create_text(100, 80, font='Times')
+    iterator = 0
     canvas.focus_set()
     while not escape:
-        canvas.itemconfig(screen, text='Iterations: ' + str(iterator))
+        canvas.itemconfig(screen1, text='Iterations: ' + str(iterator))
         iterator += 1
-        near_blocks, deleted_blocks, born_blocks = set(), set(), set()
-        check_and_rebuild(using_blocks, near_blocks, deleted_blocks, born_blocks)
+        near_empty_blocks, deleted_blocks, born_blocks = set(), set(), set()
+        check_and_rebuild(using_blocks, near_empty_blocks, deleted_blocks, born_blocks)
         canvas.update(), canvas.bind('<KeyPress>', button_press_handler)
         while not time_flow and not escape:
-            canvas.bind('<Button-1>', creation)
+            canvas.bind('<Button-1>', creation), canvas.bind('<Motion>', motion_handler)
+            canvas.itemconfig(screen2, text='Coordinates: ' + ' '.join(list(map(str, cords))))
             if creation_queue:
                 using_blocks[creation_queue] = Block(creation_queue)
                 creation_queue = None
@@ -56,10 +58,15 @@ def game():
 
 
 def creation(event):
-    global creation_queue
+    global creation_queue, cords
     cords = (event.x_root - event.x_root % block_width, event.y_root - event.y_root % block_width - 25)
     if cords not in using_blocks:
         creation_queue = cords
+
+
+def motion_handler(event):
+    global cords
+    cords = (event.x_root - event.x_root % block_width, event.y_root - event.y_root % block_width - 25)
 
 
 def button_press_handler(event):
@@ -70,10 +77,10 @@ def button_press_handler(event):
         escape = True
 
 
-def check_and_rebuild(blocks, near_blocks, deleted_blocks, born_blocks):
+def check_and_rebuild(blocks, near_empty_blocks, deleted_blocks, born_blocks):
     for block in blocks.values():
-        block.define_existing_life(blocks, deleted_blocks, near_blocks)
-    for block in near_blocks:
+        block.define_existing_life(blocks, deleted_blocks, near_empty_blocks)
+    for block in near_empty_blocks:
         define_new_life(block, blocks, born_blocks)
     for block in deleted_blocks:
         blocks[block].remove(blocks)
@@ -89,4 +96,5 @@ def define_new_life(block, blocks, born_blocks):
                 counter += 1
     if counter == 3:
         born_blocks.add(block)
+
 game()
