@@ -1,0 +1,32 @@
+
+import time
+import statistics
+
+K = 100
+
+for N in [100, 10000, 1000000]:
+    for create, add in [(list, list.append), (set, set.add)]:
+        t = []
+        for k in range(K):
+            container = create()
+            t1 = time.time()
+            for i in range(N):
+                add(container, i)
+            t2 = time.time()
+            t.append(t2-t1)
+        mean = statistics.mean(t)
+        disp = statistics.stdev(t)
+        print('{} {}.{}: {:.7f}s ({:.2f}%)'.format(N, create.__name__, add.__name__, mean, 100*disp/mean))
+
+        t = []
+        for k in range(K):
+            t1 = time.time()
+            s = sum(container)
+            t2 = time.time()
+            t.append(t2-t1)
+        mean = statistics.mean(t)
+        disp = statistics.stdev(t)
+
+        print('{} iterate over {}: {:.7f}s ({:.2f}%)'.format(N, create.__name__, mean, 100*disp/mean))
+
+    print('\n--------\n')
